@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const qrcode = require('qrcode');
 const promptpay = require('promptpay-qr');
+const PROMPTPAY_ID = '0812345678';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,7 +19,7 @@ app.post('/generate-qr', async (req, res) => {
   }
 
   try {
-    const payload = promptpay.generate(payload = promptpayId, { amount: parseFloat(amount) });
+   const payload = promptpay.generatePayload(PROMPTPAY_ID, { amount: parseFloat(amount) });
     const qrImageDataUrl = await qrcode.toDataURL(payload);
     res.json({ qrCode: qrImageDataUrl });
   } catch (error) {
