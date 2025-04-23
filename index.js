@@ -1,30 +1,52 @@
 const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const qrcode = require('qrcode');
-const promptpay = require('promptpay-qr');
-const PROMPTPAY_ID = '0812345678';
-
 const app = express();
+const QRCode = require('qrcode');
+const generatePayload = require('promptpay-qr'); // แก้ชื่อฟังก์ชันตรงนี้
+const bodyParser = require('body-parser');
+const _ = require('lodash');
+const cors = require('cors');
+
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.post('/generate-qr', async (req, res) => {
-  const { promptpayId, amount } = req.body;
+app.post('/generate-qr', (req, res) => {
+  const amount = parseFloat(_.get(req, ['body', 'amount']));
 
-  if (!promptpayId || !amount) {
-    return res.status(400).json({ error: 'Missing promptpayId or amount' });
+  if (isNaN(amount) || amount <= 0) {
+    return res.status(400).json({
+      RespCode: 400,
+      RespMessage: 'Invalid amount',
+    });
   }
 
-  try {
-   const payload = promptpay.generatePayload(PROMPTPAY_ID, { amount: parseFloat(amount) });
-    const qrImageDataUrl = await qrcode.toDataURL(payload);
-    res.json({ qrCode: qrImageDataUrl });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to generate QR code', details: error.message });
-  }
+  const mobileNumber = '1102000694354';
+  const payload = generatePayload(mobileNumber, { amount });
+  const options = {
+    color: {
+      dark: '#000',
+      light: '#fff',
+    },
+  };
+
+  QRCode.toDataURL(payload, options, (err, url) => {
+    if (err) {
+      console.log('Generate fail', err);
+      return res.status(500).json({
+        RespCode: 500,
+        RespMessage: 'QR generation failed',
+        Error: err.message,
+      });
+    }
+
+    return res.status(200).json({
+      RespCode: 200,
+      RespMessage: 'Success',
+      result: url,
+    });
+  });
 });
 
 app.get('/', (req, res) => {
@@ -34,3 +56,4 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
