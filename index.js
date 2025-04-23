@@ -9,10 +9,8 @@ const cors = require('cors')
 app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded( {extended: true}))
+const server = process.env.PORT || 3000;
 
-const server =  app.listen(3000,()=>{
-    console.log('server is running....')
-})
 
 app.post('/generateQR', (req,res)=>{
     const amount = parseFloat(_.get(req, ["body","amount"]));
