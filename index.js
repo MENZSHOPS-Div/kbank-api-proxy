@@ -22,7 +22,7 @@ app.post('/generate-qr', (req, res) => {
     });
   }
 
-  const mobileNumber = '1102000694354';
+  const mobileNumber = '0654982592';
   const payload = generatePayload(mobileNumber, { amount });
   const options = {
     color: {
